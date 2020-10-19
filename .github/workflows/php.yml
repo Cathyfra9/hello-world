@@ -25,41 +25,39 @@ jobs:
         key: ${{ runner.os }}-php-${{ hashFiles('**/composer.lock') }}
         restore-keys: |
           ${{ runner.os }}-php-
-
     - name: Install dependencies
       if: steps.composer-cache.outputs.cache-hit != 'true'
       run: composer install --prefer-dist --no-progress --no-suggest
-      
-      
-      <?php
-$servername = "localhost";
-$username = "username";
-$password = "password";
-$dbname = "myDBPDO";
-
-try {
-  $conn = new PDO("mysql:host=$servername;dbname=$dbname", $username, $password);
-  // set the PDO error mode to exception
-  $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-
-  // sql to create table
-  $sql = "CREATE TABLE MyGuests (
-  id INT(6) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-  firstname VARCHAR(30) NOT NULL,
-  lastname VARCHAR(30) NOT NULL,
-  email VARCHAR(50),
-  reg_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-  )";
-
-  // use exec() because no results are returned
-  $conn->exec($sql);
-  echo "Table MyGuests created successfully";
-} catch(PDOException $e) {
-  echo $sql . "<br>" . $e->getMessage();
-}
-
-$conn = null;
+ <?php
+//Step1
+ $db = mysqli_connect('localhost','root','root','database_name')
+ or die('Error connecting to MySQL server.');
 ?>
+
+<html>
+ <head>
+ </head>
+ <body>
+ <h1>PHP connect to MySQL</h1>
+
+<?php
+//Step2
+$query = "SELECT * FROM table_name";
+mysqli_query($db, $query) or die('Error querying database.');
+
+//Step3
+$result = mysqli_query($db, $query);
+$row = mysqli_fetch_array($result);
+
+while ($row = mysqli_fetch_array($result)) {
+ echo $row['first_name'] . ' ' . $row['last_name'] . ': ' . $row['email'] . ' ' . $row['city'] .'<br />';
+}
+//Step 4
+mysqli_close($db);
+?>
+
+</body>
+</html>
 
     # Add a test script to composer.json, for instance: "test": "vendor/bin/phpunit"
     # Docs: https://getcomposer.org/doc/articles/scripts.md
