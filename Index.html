@@ -1,16 +1,27 @@
-<html>
-    <title>My test Page</title>
-	<Body>Project Name</Body>
-	<Body>Department</Body>
-	<Body>Description of Problem</Body>
-
-	<style>
-		body [ 
-			baground-color:green'
-			color:afff;
-			text-align:center;
-			}
-			</style>
-
-</html>	
-	
+SELECT CONVERT(NVARCHAR(MAX), (SELECT
+    (SELECT 'Top Thirty Sales per City ('
+	     +CONVERT(CHAR(11),GETDATE(),113)
+		 +')' FOR XML PATH(''), TYPE) AS 'caption',
+    (SELECT 'rank' AS th, 'Sales' AS th, 'City' AS th FOR XML RAW('tr'), ELEMENTS, TYPE) AS 'thead',
+    (
+    SELECT TOP 30
+	 CASE WHEN COUNT(*)>400 THEN 'TextRed' 
+	      WHEN COUNT(*)>250 THEN 'TextMauve' 
+		  ELSE 'TextBlue'END AS [td/@class],
+	 RANK() OVER (ORDER BY COUNT(*) desc) AS td , 
+	    '' AS [*],--hack to allow the use of PATH
+	 COUNT(*) AS td,--PATH otherwise concatenates TDs
+	    '' AS [*],--hack to allow the use of PATH
+      a.City + ', ' + sp.Name + ', ' + cr.Name AS td
+      FROM Sales.SalesOrderHeader AS soh
+        JOIN Person.Address AS a
+          ON a.AddressID = soh.BillToAddressID
+        JOIN Person.StateProvince AS sp
+          ON sp.StateProvinceID = a.StateProvinceID
+        JOIN Person.CountryRegion AS cr
+          ON cr.CountryRegionCode = sp.CountryRegionCode
+      GROUP BY a.City + ', ' + sp.Name + ', ' + cr.Name
+      ORDER BY COUNT(*) DESC
+    FOR XML PATH('tr'), ELEMENTS, TYPE
+    ) AS 'tbody'
+  FOR XML PATH(''), ROOT('table')))
